@@ -2,6 +2,7 @@ require 'syslog'
 require 'logger'
 
 class SyslogLogger
+  include Logger::Severity
 
   ##
   # The version of SyslogLogger you are using.
@@ -58,25 +59,16 @@ class SyslogLogger
   ##
   # Builds a methods for level +meth+.
 
-  def self.make_methods(meth)
-    eval <<-EOM, nil, __FILE__, __LINE__ + 1
-      def #{meth}(message = nil)
-        return true if #{LOGGER_LEVEL_MAP[meth]} < @level
-        message ||= yield if block_given?
-        if message
-          SYSLOG.#{LOGGER_MAP[meth]} clean(message)
-        end
-        return true
-      end
-
-      def #{meth}?
-        @level <= Logger::#{meth.to_s.upcase}
-      end
-    EOM
-  end
-
-  LOGGER_MAP.each_key do |level|
-    make_methods level
+  for severity in Logger::Severity.constants
+    class_eval <<-EOT, __FILE__, __LINE__
+      def #{severity.downcase}(message = nil, progname = nil, &block)  # def debug(message = nil, progname = nil, &block)
+        add(#{severity}, message, progname, &block)                    #   add(DEBUG, message, progname, &block)
+      end                                                              # end
+                                                                       #
+      def #{severity.downcase}?                                        # def debug?
+        #{severity} >= @level                                          #   DEBUG >= @level
+      end                                                              # end
+    EOT
   end
 
   ##
