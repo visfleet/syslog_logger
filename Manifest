@@ -1,5 +1,3 @@
-History.txt
-lib/analyzer_tools/syslog_logger.rb
 lib/syslog_logger.rb
 lib/syslog_logger_env_formatting.rb
 Manifest
