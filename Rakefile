@@ -1,15 +1,23 @@
-require 'rubygems'
-require 'rake'
-require 'echoe'
-require './lib/syslog_logger.rb'
+require "rake/gempackagetask"
 
-Echoe.new('SyslogLogger', SyslogLogger::VERSION) do |p|
-  p.author = 'Eric Hodel; Chris Powell; Matthew Boeh; Ashley Martens'
-  p.email = 'drbrain@segment7.net; cpowell@prylis.com; mboeh@desperance.net'
-  p.description = "An improved Logger replacement that logs to syslog. It is almost drop-in with a few caveats."
-  p.url = "http://github.com/ashleym1972/sysloglogger"
-  p.ignore_pattern = ["tmp/*", "script/*"]
-  p.development_dependencies = []
+$dir = File.dirname(__FILE__)
+
+task :default => :package
+
+desc "Run all tests"
+
+task :test do
+  $: << "#{$dir}/lib"
+  Dir.glob("#{$dir}/test/*.rb").each do |test_rb|
+    require test_rb
+  end
 end
 
-Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }
+spec = eval(IO.read("#{$dir}/syslog_logger.gemspec"))
+gem_pkg_task = Rake::GemPackageTask.new(spec) {|pkg|}
+
+desc "Install the gem with sudo"
+task :install => :package do
+  system("sudo", "gem", "install",
+    "#{$dir}/#{gem_pkg_task.package_dir}/#{gem_pkg_task.gem_file}")
+end

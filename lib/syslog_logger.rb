@@ -4,10 +4,8 @@ require 'logger'
 class SyslogLogger
   include Logger::Severity
 
-  ##
   # The version of SyslogLogger you are using.
-
-  VERSION = '1.4.2'
+  VERSION = '1.6.0'
 
   # From 'man syslog.h':
   # LOG_EMERG   A panic condition was reported to all processes.
@@ -26,9 +24,7 @@ class SyslogLogger
   # INFO:   generic (useful) information about system operation
   # DEBUG:  low-level information for developers
 
-  ##
   # Maps Logger warning types to syslog(3) warning types.
-
   LOGGER_MAP = {
     :unknown => :alert,
     :fatal   => :alert,
@@ -38,27 +34,21 @@ class SyslogLogger
     :debug   => :debug
   }
 
-  ##
   # Maps Logger log levels to their values so we can silence.
-
   LOGGER_LEVEL_MAP = {}
 
   LOGGER_MAP.each_key do |key|
     LOGGER_LEVEL_MAP[key] = Logger.const_get key.to_s.upcase
   end
 
-  ##
   # Maps Logger log level values to syslog log levels.
-
   LEVEL_LOGGER_MAP = {}
 
   LOGGER_LEVEL_MAP.invert.each do |level, severity|
     LEVEL_LOGGER_MAP[level] = LOGGER_MAP[severity]
   end
 
-  ##
   # Builds a methods for level +meth+.
-
   for severity in Logger::Severity.constants
     class_eval <<-EOT, __FILE__, __LINE__
       def #{severity.downcase}(message = nil, progname = nil, &block)  # def debug(message = nil, progname = nil, &block)
@@ -71,28 +61,23 @@ class SyslogLogger
     EOT
   end
 
-  ##
   # Log level for Logger compatibility.
-
   attr_accessor :level
 
-  ##
   # Fills in variables for Logger compatibility.  If this is the first
   # instance of SyslogLogger, +program_name+ may be set to change the logged
-  # program name.
+  # program name and +facility+ may be set to specify a custom facility
+  # with your syslog daemon.
   #
   # Due to the way syslog works, only one program name may be chosen.
-
-  def initialize(program_name = 'rails')
+  def initialize(program_name = 'rails', facility = Syslog::LOG_USER)
     @level = Logger::DEBUG
 
     return if defined? SYSLOG
-    self.class.const_set :SYSLOG, Syslog.open(program_name)
+    self.class.const_set :SYSLOG, Syslog.open(program_name, nil, facility)
   end
 
-  ##
   # Almost duplicates Logger#add.  +progname+ is ignored.
-
   def add(severity, message = nil, progname = nil, &block)
     severity ||= Logger::UNKNOWN
     return true if severity < @level
@@ -101,11 +86,7 @@ class SyslogLogger
     return true
   end
 
-  ##
   # Allows messages of a particular log level to be ignored temporarily.
-  #
-  # Can you say "Broken Windows"?
-
   def silence(temporary_level = Logger::ERROR)
     old_logger_level = @level
     @level = temporary_level
@@ -114,11 +95,15 @@ class SyslogLogger
     @level = old_logger_level
   end
 
-  private
+  # In Logger, this dumps the raw message; the closest equivalent
+  # would be Logger::UNKNOWN
+  def <<(message)
+    add(Logger::UNKNOWN, message)
+  end
 
-  ##
+private
+
   # Clean up messages so they're nice and pretty.
-
   def clean(message)
     message = message.to_s.dup
     message.strip!
@@ -128,4 +113,3 @@ class SyslogLogger
   end
 
 end
-
