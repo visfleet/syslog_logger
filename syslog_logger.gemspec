@@ -3,7 +3,7 @@
 Gem::Specification.new do |s|
   s.name = "syslog_logger"  
   s.description = s.summary = "An improved Logger replacement that logs to syslog. It is almost drop-in with a few caveats."
-  s.version = "1.6.0"
+  s.version = "1.6.1"
   s.homepage = "http://github.com/ashleym1972/syslog_logger"
   s.authors = ["Eric Hodel; Chris Powell; Matthew Boeh; Ian Lesperance; Dana Danger; Brian Smith; Ashley Martens"]
   s.email = %q{drbrain@segment7.net; cpowell@prylis.com; mboeh@desperance.net}

@@ -5,7 +5,7 @@ class SyslogLogger
   include Logger::Severity
 
   # The version of SyslogLogger you are using.
-  VERSION = '1.6.0'
+  VERSION = '1.6.1'
 
   # From 'man syslog.h':
   # LOG_EMERG   A panic condition was reported to all processes.
@@ -80,10 +80,11 @@ class SyslogLogger
   # Almost duplicates Logger#add.  +progname+ is ignored.
   def add(severity, message = nil, progname = nil, &block)
     severity ||= Logger::UNKNOWN
-    return true if severity < @level
-    message = clean(message || block.call)
-    SYSLOG.send LEVEL_LOGGER_MAP[severity], clean(message)
-    return true
+    if severity >= @level
+      message = clean(message || block.call)
+      SYSLOG.send LEVEL_LOGGER_MAP[severity], clean(message)
+    end
+    true
   end
 
   # Allows messages of a particular log level to be ignored temporarily.
