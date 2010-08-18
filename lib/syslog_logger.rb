@@ -27,7 +27,7 @@ class SyslogLogger
   # Maps Logger warning types to syslog(3) warning types.
   LOGGER_MAP = {
     :unknown => :alert,
-    :fatal   => :alert,
+    :fatal   => :crit,
     :error   => :err,
     :warn    => :warning,
     :info    => :info,
