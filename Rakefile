@@ -42,6 +42,6 @@ task :publish => [ :test, :build ] do
   system "git tag v#{jt.jeweler.version}"
   system "git push origin v#{jt.jeweler.version}"
   system "git push origin master"
-  system "gem push syslog-logger-#{jt.jeweler.version}.gem"
+  system "gem push pkg/syslog-logger-#{jt.jeweler.version}.gem"
   system "git clean -fd"
 end
