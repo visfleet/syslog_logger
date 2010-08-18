@@ -44,8 +44,12 @@ Add the following lines:
   !rails
   *.*                                             /var/log/production.log
 
+Or, in Mac OS X:
+
+  local7.*                                        /var/log/production.log
+
 Then touch /var/log/production.log and signal syslogd with a HUP
-(killall -HUP syslogd, on FreeBSD).
+(killall -HUP syslogd, on FreeBSD and OS X).
 
 ==== /etc/newsyslog.conf
 
