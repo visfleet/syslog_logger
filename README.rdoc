@@ -1,6 +1,6 @@
 = SyslogLogger
 
-http://github.com/ashleym1972/sysloglogger/tree
+http://github.com/ngmoco/sysloglogger
 
 == DESCRIPTION:
 
@@ -21,7 +21,11 @@ the Syslog counterparts.  It also adds the ability to select a syslog facility o
 
 === config/environment.rb
 
-  config.gem "ashleym1972-SyslogLogger", :source=>'http://gems.github.com', :lib=>'syslog_logger'
+  config.gem 'syslog_logger'
+
+=== Gemfile
+
+  gem 'syslog-logger'
 
 === config/environments/production.rb
 
@@ -82,11 +86,6 @@ Now restart your Rails app. Your production logs should now be showing up in
 /var/log/production.log. If you have mulitple machines, you can log them all
 to a central machine with remote syslog logging for analysis. Consult your
 syslogd(8) manpage for further details.
-
-== INSTALL:
-
-  $ gem sources -a http://gems.github.com (you only have to do this once)
-  $ sudo gem install ashleym1972-SyslogLogger
 
 == LICENSE:
 
