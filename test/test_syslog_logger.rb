@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'tempfile'
-require 'syslog_logger'
+require 'syslog-logger'
 
 module MockSyslog; end
 
@@ -8,7 +8,7 @@ class << MockSyslog
 
   @line = nil
 
-  SyslogLogger::LOGGER_MAP.values.uniq.each do |level|
+  Logger::Syslog::LOGGER_MAP.values.uniq.each do |level|
     eval <<-EOM
       def #{level}(message)
         @line = "#{level.to_s.upcase} - \#{message}"
@@ -29,7 +29,7 @@ class << MockSyslog
 
 end
 
-SyslogLogger.const_set :SYSLOG, MockSyslog
+Logger::Syslog.const_set :SYSLOG, MockSyslog
 
 class TestLogger < Test::Unit::TestCase
 
@@ -457,7 +457,7 @@ class TestSyslogLogger < TestLogger
 
   def setup
     super
-    @logger = SyslogLogger.new
+    @logger = Logger::Syslog.new
   end
 
   class Log
@@ -466,7 +466,7 @@ class TestSyslogLogger < TestLogger
       @line = line
       return unless /\A(\w+) - (.*)\Z/ =~ @line
       severity, @msg = $1, $2
-      severity = SyslogLogger::LOGGER_MAP.invert[severity.downcase.intern]
+      severity = Logger::Syslog::LOGGER_MAP.invert[severity.downcase.intern]
       @severity = severity.to_s.upcase
       @severity = 'ANY' if @severity == 'UNKNOWN'
     end

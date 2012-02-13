@@ -4,24 +4,24 @@ http://github.com/ngmoco/sysloglogger
 
 == DESCRIPTION:
 
-SyslogLogger is a Logger replacement that logs to syslog. It is almost drop-in
-with a few caveats. You can add SyslogLogger to your Rails production
+Logger::Syslog is a Logger replacement that logs to syslog. It is almost drop-in
+with a few caveats. You can add Logger::Syslog to your Rails production
 environment to aggregate logs between multiple machines.
 
-NOTE! You can only set the SyslogLogger program name and facility when you initialize
-SyslogLogger for the first time. This is a limitation of the way SyslogLogger
+NOTE! You can only set the Logger::Syslog program name and facility when you initialize
+Logger::Syslog for the first time. This is a limitation of the way Logger::Syslog
 uses syslog (and in some ways, a limitation of the way syslog(3) works).
-Attempts to change SyslogLogger's program name or facility after the first initialization
+Attempts to change Logger::Syslog's program name or facility after the first initialization
 will be ignored.
 
-This particular SyslogLogger improves the original by correctly mapping Rails log severities to
+This particular Logger::Syslog improves the original by correctly mapping Rails log severities to
 the Syslog counterparts.  It also adds the ability to select a syslog facility other than "user."
 
 == SYNOPSIS:
 
 === config/environment.rb
 
-  config.gem 'syslog_logger'
+  config.gem 'syslog-logger'
 
 === Gemfile
 
@@ -31,13 +31,12 @@ the Syslog counterparts.  It also adds the ability to select a syslog facility o
 
 (Only this environment, since you probably only want to enable it for Production, and not Test or Development.)
 
-  require 'syslog_logger'
-  RAILS_DEFAULT_LOGGER = SyslogLogger.new 
+  RAILS_DEFAULT_LOGGER = Logger::Syslog.new 
 
-By default, SyslogLogger uses the program name 'rails' and the facility 'user', but this can be
-changed via the arguments to SyslogLogger.new:
+By default, Logger::Syslog uses the program name 'rails' and the facility 'user', but this can be
+changed via the arguments to Logger::Syslog.new:
 
-  RAILS_DEFAULT_LOGGER = SyslogLogger.new('mygreatapp', Syslog::LOG_LOCAL7)
+  RAILS_DEFAULT_LOGGER = Logger::Syslog.new('mygreatapp', Syslog::LOG_LOCAL7)
   
 === BSD syslog setup
 

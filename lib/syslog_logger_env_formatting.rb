@@ -11,7 +11,7 @@
 # logger.error {"Something is messed up!"}
 #     #=> [development] [ERROR: 2008-01-25 14:16:12.12345] [123] [ClassName] Something is messed up!
 
-class SyslogLogger
+class Logger::Syslog
 
     # short names for "DEBUG", "INFO", ...
     # must be ordered to correspond to severity constants defined in 
@@ -21,18 +21,13 @@ class SyslogLogger
 
     @@log_level_names = %w( DEBUG INFO WARN ERROR FATAL UNKNOWN )
     LOG_NAME_FIELD_WIDTH = 7
-    
+  
     def add_with_formatting(severity, message = nil, progname = nil, &block)
       severity ||= Logger::UNKNOWN
-      message = "[#{RAILS_ENV}] [#{@@log_level_names[severity].ljust(LOG_NAME_FIELD_WIDTH)}: #{time.strftime("%Y-%m-%d %H:%M:%S")}.#{time.usec.to_s.rjust(6, '0')}] #{message}"
+      message = "[#{RAILS_ENV}] [#{@@log_level_names[severity].ljust(LOG_NAME_FIELD_WIDTH)}: #{time.strftime("%Y-%m-%d %H:%M:%S")}.#{time.usec.to_s.rjust(6, '0')}] #{message || block.call}"
 
-      if(block)
-        add_without_formatting(severity, message, progname,
-          &Proc.new{g_log_formatter(severity, nil, user, &block)})
-      else
-        add_without_formatting(severity, message, progname)
-      end
+      add_without_formatting(severity, message, progname)
     end
     alias_method_chain :add, :formatting
-    
+  
 end

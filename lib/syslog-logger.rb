@@ -1,11 +1,11 @@
 require 'syslog'
 require 'logger'
 
-class SyslogLogger
+class Logger::Syslog
   include Logger::Severity
 
-  # The version of SyslogLogger you are using.
-  VERSION = '1.6.1'
+  # The version of Logger::Syslog you are using.
+  VERSION = '1.6.6'
 
   # From 'man syslog.h':
   # LOG_EMERG   A panic condition was reported to all processes.
@@ -65,7 +65,7 @@ class SyslogLogger
   attr_accessor :level
 
   # Fills in variables for Logger compatibility.  If this is the first
-  # instance of SyslogLogger, +program_name+ may be set to change the logged
+  # instance of Logger::Syslog, +program_name+ may be set to change the logged
   # program name and +facility+ may be set to specify a custom facility
   # with your syslog daemon.
   #
