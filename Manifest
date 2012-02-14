@@ -1,5 +1,5 @@
 lib/syslog-logger.rb
-lib/syslog_logger_env_formatting.rb
+lib/syslog-formatter.rb
 Manifest
 Rakefile
 README.rdoc
