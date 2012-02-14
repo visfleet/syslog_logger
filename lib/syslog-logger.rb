@@ -1,11 +1,12 @@
 require 'syslog'
 require 'logger'
+require 'syslog-formatter'
 
 class Logger::Syslog
   include Logger::Severity
 
   # The version of Logger::Syslog you are using.
-  VERSION = '1.6.6'
+  VERSION = '1.6.7'
 
   # From 'man syslog.h':
   # LOG_EMERG   A panic condition was reported to all processes.
@@ -56,13 +57,35 @@ class Logger::Syslog
       end                                                              # end
                                                                        #
       def #{severity.downcase}?                                        # def debug?
-        #{severity} >= @level                                          #   DEBUG >= @level
+        @level <= #{severity}                                          #   @level <= DEBUG
       end                                                              # end
     EOT
   end
 
   # Log level for Logger compatibility.
   attr_accessor :level
+
+  # Logging program name.
+  attr_accessor :progname
+
+  # Logging date-time format (string passed to +strftime+).
+  def datetime_format=(datetime_format)
+    @default_formatter.datetime_format = datetime_format
+  end
+
+  def datetime_format
+    @default_formatter.datetime_format
+  end
+
+  # Logging formatter.  formatter#call is invoked with 4 arguments; severity,
+  # time, progname and msg for each log.  Bear in mind that time is a Time and
+  # msg is an Object that user passed and it could not be a String.  It is
+  # expected to return a logdev#write-able Object.  Default formatter is used
+  # when no formatter is set.
+  attr_accessor :formatter
+
+  alias sev_threshold level
+  alias sev_threshold= level=
 
   # Fills in variables for Logger compatibility.  If this is the first
   # instance of Logger::Syslog, +program_name+ may be set to change the logged
@@ -71,7 +94,10 @@ class Logger::Syslog
   #
   # Due to the way syslog works, only one program name may be chosen.
   def initialize(program_name = 'rails', facility = Syslog::LOG_USER, logopts=nil)
-    @level = Logger::DEBUG
+    @default_formatter = Logger::SyslogFormatter.new
+    @formatter         = nil
+    @progname          = nil
+    @level             = Logger::DEBUG
 
     return if defined? SYSLOG
     self.class.const_set :SYSLOG, Syslog.open(program_name, logopts, facility)
@@ -80,10 +106,18 @@ class Logger::Syslog
   # Almost duplicates Logger#add.  +progname+ is ignored.
   def add(severity, message = nil, progname = nil, &block)
     severity ||= Logger::UNKNOWN
-    if severity >= @level
-      message = clean(message || block.call)
-      SYSLOG.send LEVEL_LOGGER_MAP[severity], clean(message)
+    if severity < @level
+      return true
     end
+    if message.nil?
+      if block_given?
+        message = yield
+      else
+        message = progname
+        progname = @progname
+      end
+    end
+    SYSLOG.send(LEVEL_LOGGER_MAP[severity], format_message(format_severity(severity), Time.now, progname, clean(message)))
     true
   end
 
@@ -102,15 +136,26 @@ class Logger::Syslog
     add(Logger::UNKNOWN, message)
   end
 
-private
+  private
 
-  # Clean up messages so they're nice and pretty.
-  def clean(message)
-    message = message.to_s.dup
-    message.strip!
-    message.gsub!(/%/, '%%') # syslog(3) freaks on % (printf)
-    message.gsub!(/\e\[[^m]*m/, '') # remove useless ansi color codes
-    return message
-  end
+    # Severity label for logging. (max 5 char)
+    SEV_LABEL = %w(DEBUG INFO WARN ERROR FATAL ANY)
+
+    def format_severity(severity)
+      SEV_LABEL[severity] || 'ANY'
+    end
+
+    def format_message(severity, datetime, progname, msg)
+      (@formatter || @default_formatter).call(severity, datetime, progname, msg)
+    end
+
+    # Clean up messages so they're nice and pretty.
+    def clean(message)
+      message = message.to_s.dup
+      message.strip!
+      message.gsub!(/%/, '%%') # syslog(3) freaks on % (printf)
+      message.gsub!(/\e\[[^m]*m/, '') # remove useless ansi color codes
+      return message
+    end
 
 end

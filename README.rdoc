@@ -17,6 +17,8 @@ will be ignored.
 This particular Logger::Syslog improves the original by correctly mapping Rails log severities to
 the Syslog counterparts.  It also adds the ability to select a syslog facility other than "user."
 
+Version 1.6.7 takes a formatter as logger does and uses call to format the message.
+
 == SYNOPSIS:
 
 === config/environment.rb
