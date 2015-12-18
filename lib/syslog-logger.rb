@@ -5,6 +5,9 @@ require 'syslog-formatter'
 class Logger::Syslog
   include Logger::Severity
 
+  cattr_accessor :mutex
+  self.mutex = Mutex.new
+
   # The version of Logger::Syslog you are using.
   VERSION = '1.6.8'
 
@@ -123,11 +126,15 @@ class Logger::Syslog
 
   # Allows messages of a particular log level to be ignored temporarily.
   def silence(temporary_level = Logger::ERROR)
-    old_logger_level = @level
-    @level = temporary_level
-    yield
-  ensure
-    @level = old_logger_level
+    mutex.synchronize do
+      begin
+        old_logger_level = @level
+        @level = temporary_level
+        yield
+      ensure
+        @level = old_logger_level
+      end
+    end
   end
 
   # In Logger, this dumps the raw message; the closest equivalent
